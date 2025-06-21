@@ -11,7 +11,7 @@ export default function Contact() {
     email: "",
     contactNumber: "",
     subject: "",
-    message: ""
+    message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
@@ -19,9 +19,9 @@ export default function Contact() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     // Clear errors when user starts typing
     if (errors.length > 0) {
@@ -37,13 +37,16 @@ export default function Contact() {
     setSubmitStatus(null);
 
     try {
-      const response = await fetch("https://compass-insurance-backend.onrender.com/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        "https://compass-insurance-backend.onrender.com/api/contact",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const result = await response.json();
 
@@ -54,7 +57,7 @@ export default function Contact() {
           email: "",
           contactNumber: "",
           subject: "",
-          message: ""
+          message: "",
         });
       } else {
         setSubmitStatus("error");
@@ -67,7 +70,9 @@ export default function Contact() {
     } catch (error) {
       console.error("Error submitting contact:", error);
       setSubmitStatus("error");
-      setErrors([{ message: "Network error. Please check if the server is running." }]);
+      setErrors([
+        { message: "Network error. Please check if the server is running." },
+      ]);
     } finally {
       setIsSubmitting(false);
     }
@@ -102,18 +107,28 @@ export default function Contact() {
         </section>
 
         <section className="py-16 px-6 md:px-20 bg-white">
-          <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-12">            <div className="bg-gray-50 rounded-xl p-8">
+          <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-12">
+            {" "}
+            <div className="bg-gray-50 rounded-xl p-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
                 Send Us a Message
               </h2>
-              
+
               {/* Success Message */}
               {submitStatus === "success" && (
                 <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md">
                   <div className="flex">
                     <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      <svg
+                        className="h-5 w-5 text-green-400"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     </div>
                     <div className="ml-3">
@@ -121,7 +136,8 @@ export default function Contact() {
                         Message Sent Successfully!
                       </h3>
                       <p className="mt-1 text-sm text-green-700">
-                        Thank you for contacting us. We'll get back to you as soon as possible.
+                        Thank you for contacting us. We'll get back to you as
+                        soon as possible.
                       </p>
                     </div>
                   </div>
@@ -133,8 +149,16 @@ export default function Contact() {
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
                   <div className="flex">
                     <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      <svg
+                        className="h-5 w-5 text-red-400"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     </div>
                     <div className="ml-3">
@@ -261,7 +285,6 @@ export default function Contact() {
                 </button>
               </form>
             </div>
-
             <div>
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
                 Contact Information
@@ -333,7 +356,7 @@ export default function Contact() {
                       </a>
                     </p>
                     <p className="text-sm text-gray-500 mt-1">
-                      Mon-Fri: 8am to 8pm IST
+                      Monday-Saturday: 8am to 8pm IST
                     </p>
                   </div>
                 </div>
@@ -341,7 +364,7 @@ export default function Contact() {
                 <div className="flex items-start">
                   <a
                     target="_blank"
-                    href="https://g.co/kgs/Ci3iyge"
+                    href="https://maps.app.goo.gl/yhijqPSAuZLr5ULy6"
                     className="flex-shrink-0 bg-blue-100 p-3 rounded-lg"
                   >
                     <svg
@@ -371,8 +394,7 @@ export default function Contact() {
                     <p className="text-gray-600 mt-1">
                       COMPASS INSURANCE CONSULTANCY
                       <br />B 327, Shalin Square, Hathijan Circle, Sardar Patel
-                      Ring Rd, above Zudio Showroom, Vinzol, Ahmedabad, Gujarat
-                      382445.
+                      Ring Rd, Vinzol, Ahmedabad, Gujarat 382445.
                     </p>
                   </div>
                 </div>

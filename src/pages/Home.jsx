@@ -5,7 +5,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import HowItWorks from "../components/HowItWorks";
 import Testimonials from "../components/Testimonials";
-import compassLogo from "../logo/Screenshot 2025-06-15 114647.png";
+import compassLogo from "../logo/image.png";
 import {
   CarIcon,
   HeartPulseIcon,
@@ -342,23 +342,36 @@ const Home = () => {
               {features.map((feature, index) => (
                 <motion.div
                   key={index}
-                  className={`${feature.bgColor} ${feature.hoverColor} p-8 rounded-xl shadow-md transition-all duration-300`}
+                  className={`${feature.bgColor} ${feature.hoverColor} p-8 rounded-xl shadow-md transition-all duration-300 flex flex-col h-full`}
                   variants={item}
                   whileHover={{ y: -5 }}
                 >
-                  <motion.div
-                    className={`mb-4 ${feature.textColor}`}
-                    whileHover={{ scale: 1.1 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                  >
-                    {feature.icon}
-                  </motion.div>
-                  <h3
-                    className={`text-xl font-semibold mb-2 ${feature.textColor}`}
-                  >
-                    {feature.title}
-                  </h3>
-                  <p className="text-gray-700">{feature.description}</p>
+                  <div className="flex-grow">
+                    <motion.div
+                      className={`mb-4 ${feature.textColor}`}
+                      whileHover={{ scale: 1.1 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 10,
+                      }}
+                    >
+                      {feature.icon}
+                    </motion.div>
+                    <h3
+                      className={`text-xl font-semibold mb-2 ${feature.textColor}`}
+                    >
+                      {feature.title}
+                    </h3>
+                    <p className="text-gray-700">{feature.description}</p>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-gray-200">
+                    <p className="text-xs text-gray-500 italic">
+                      Terms and conditions apply. Management reserves the right
+                      to alter any terms at its discretion.
+                    </p>
+                  </div>
                 </motion.div>
               ))}
             </motion.div>

@@ -1,4 +1,5 @@
 // src/components/InsuranceLayout.jsx
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
   CarIcon,
@@ -200,7 +201,7 @@ export default function InsuranceLayout({
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-md p-8 md:p-10">
+          <div className="bg-white rounded-xl shadow-md p-8 mb-11  md:p-10">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div>
                 <h2 className="text-2xl font-bold mb-2 text-gray-800">
@@ -223,6 +224,22 @@ export default function InsuranceLayout({
                 Get a Free Quote
               </Link>
             </div>
+          </div>
+
+          <div className="">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="p-4 bg-gray-100 rounded-lg"
+            >
+              <p className="text-sm text-gray-600 text-center">
+                <span className="font-medium">Terms and conditions apply.</span>{" "}
+                Management reserves the right to alter any terms and conditions
+                at its discretion. For complete details, please refer to the
+                policy wordings.
+              </p>
+            </motion.div>
           </div>
         </div>
       </section>
