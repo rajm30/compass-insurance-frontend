@@ -18,35 +18,35 @@ const Admin = () => {
   const [quotes, setQuotes] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(false);
-  
+
   // Pagination and filtering states
   const [quotePagination, setQuotePagination] = useState({
     currentPage: 1,
     totalPages: 1,
     totalQuotes: 0,
     hasNextPage: false,
-    hasPrevPage: false
+    hasPrevPage: false,
   });
   const [contactPagination, setContactPagination] = useState({
     currentPage: 1,
     totalPages: 1,
     totalContacts: 0,
     hasNextPage: false,
-    hasPrevPage: false
+    hasPrevPage: false,
   });
-  
+
   // Filter states
   const [quoteFilters, setQuoteFilters] = useState({
     insuranceType: "",
     email: "",
-    search: ""
+    search: "",
   });
   const [contactFilters, setContactFilters] = useState({
     subject: "",
     email: "",
-    search: ""
+    search: "",
   });
-  
+
   // Dialog states
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -70,55 +70,66 @@ const Admin = () => {
     if (session === "authenticated") {
       setIsAuthenticated(true);
     }
-  }, []);  const fetchData = useCallback(async (page = 1, filters = {}) => {
-    setLoading(true);
-    try {
-      if (activeTab === "quotes") {
-        const currentFilters = { ...quoteFilters, ...filters };
-        const params = new URLSearchParams({
-          page: page.toString(),
-          limit: "10",
-          ...(currentFilters.insuranceType && { insuranceType: currentFilters.insuranceType }),
-          ...(currentFilters.email && { email: currentFilters.email }),
-          ...(currentFilters.search && { search: currentFilters.search })
-        });
-        
-        const result = await apiService.getQuotes(`?${params}`);
-        if (result.success) {
-          setQuotes(result.data.quotes || []);
-          setQuotePagination(result.data.pagination || {});
+  }, []);
+
+  const fetchData = useCallback(
+    async (page = 1, filters = {}) => {
+      setLoading(true);
+      try {
+        if (activeTab === "quotes") {
+          const currentFilters = { ...quoteFilters, ...filters };
+          const params = new URLSearchParams({
+            page: page.toString(),
+            limit: "10",
+            ...(currentFilters.insuranceType && {
+              insuranceType: currentFilters.insuranceType,
+            }),
+            ...(currentFilters.email && { email: currentFilters.email }),
+            ...(currentFilters.search && { search: currentFilters.search }),
+          });
+
+          const result = await apiService.getQuotes(`?${params}`);
+          if (result.success) {
+            setQuotes(result.data.quotes || []);
+            setQuotePagination(result.data.pagination || {});
+          }
+        } else if (activeTab === "contacts") {
+          const currentFilters = { ...contactFilters, ...filters };
+          const params = new URLSearchParams({
+            page: page.toString(),
+            limit: "10",
+            ...(currentFilters.subject && { subject: currentFilters.subject }),
+            ...(currentFilters.email && { email: currentFilters.email }),
+            ...(currentFilters.search && { search: currentFilters.search }),
+          });
+
+          const result = await apiService.getContacts(`?${params}`);
+          if (result.success) {
+            setContacts(result.data.contacts || []);
+            setContactPagination(result.data.pagination || {});
+          }
         }
-      } else if (activeTab === "contacts") {
-        const currentFilters = { ...contactFilters, ...filters };
-        const params = new URLSearchParams({
-          page: page.toString(),
-          limit: "10",
-          ...(currentFilters.subject && { subject: currentFilters.subject }),
-          ...(currentFilters.email && { email: currentFilters.email }),
-          ...(currentFilters.search && { search: currentFilters.search })
-        });
-        
-        const result = await apiService.getContacts(`?${params}`);
-        if (result.success) {
-          setContacts(result.data.contacts || []);
-          setContactPagination(result.data.pagination || {});
-        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        showError("Failed to load data. Please try again.", 4000);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      showError("Failed to load data. Please try again.", 4000);
-    } finally {
-      setLoading(false);
-    }  }, [activeTab, quoteFilters, contactFilters, showError]);
-  
+    },
+    [activeTab, quoteFilters, contactFilters, showError]
+  );
+
   // Filter and pagination handlers
-  const handleFiltersChange = useCallback((newFilters) => {
-    if (activeTab === "quotes") {
-      setQuoteFilters(newFilters);
-    } else {
-      setContactFilters(newFilters);
-    }
-  }, [activeTab]);
+  const handleFiltersChange = useCallback(
+    (newFilters) => {
+      if (activeTab === "quotes") {
+        setQuoteFilters(newFilters);
+      } else {
+        setContactFilters(newFilters);
+      }
+    },
+    [activeTab]
+  );
 
   const handleSearch = useCallback(() => {
     fetchData(1); // Reset to first page when searching
@@ -132,20 +143,26 @@ const Admin = () => {
     }
     fetchData(1); // Reset to first page when clearing
   }, [activeTab, fetchData]);
-  const handlePageChange = useCallback((page) => {
-    fetchData(page);
-  }, [fetchData]);
+
+  const handlePageChange = useCallback(
+    (page) => {
+      fetchData(page);
+    },
+    [fetchData]
+  );
 
   useEffect(() => {
     if (isAuthenticated) {
       fetchData();
     }
   }, [isAuthenticated, fetchData]);
+
   const handleDelete = (type, item) => {
     setCurrentItem(item);
     setCurrentType(type);
     setShowDeleteDialog(true);
   };
+
   const confirmDelete = async () => {
     try {
       let result;
@@ -160,15 +177,12 @@ const Admin = () => {
         result.message === "Quote deleted successfully" ||
         result.message === "Contact deleted successfully"
       ) {
-        // Show success toast
         showSuccess(
           `${
             currentType === "quote" ? "Quote request" : "Contact message"
           } deleted successfully!`,
           4000
         );
-
-        // Refresh data after deletion
         fetchData();
         setShowDeleteDialog(false);
         setCurrentItem(null);
@@ -196,11 +210,13 @@ const Admin = () => {
     setCurrentItem(null);
     setCurrentType("");
   };
+
   const handleEdit = (type, item) => {
     setCurrentItem(item);
     setCurrentType(type);
     setShowEditDialog(true);
   };
+
   const confirmEdit = async (editFormData) => {
     try {
       let result;
@@ -211,15 +227,12 @@ const Admin = () => {
       }
 
       if (result.success) {
-        // Show success toast
         showSuccess(
           `${
             currentType === "quote" ? "Quote request" : "Contact message"
           } updated successfully!`,
           4000
         );
-
-        // Refresh data after update
         fetchData();
         setShowEditDialog(false);
         setCurrentItem(null);
@@ -247,6 +260,7 @@ const Admin = () => {
     setCurrentItem(null);
     setCurrentType("");
   };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsAnimating(true);
@@ -265,6 +279,7 @@ const Admin = () => {
       setIsAnimating(false);
     }, 1000);
   };
+
   const handleLogout = () => {
     setIsAuthenticated(false);
     localStorage.removeItem("admin_session");
@@ -275,11 +290,13 @@ const Admin = () => {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Modern grid background */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:6rem_4rem] opacity-20"></div>
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-transparent to-purple-600/10"></div>{" "}
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-transparent to-purple-600/10"></div>
+
       {!isAuthenticated ? (
         <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
           <div className="w-full max-w-md">
@@ -401,7 +418,7 @@ const Admin = () => {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={2}
-                          d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h2m10 3v2a3 3 0 01-3 3h-2m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h2m5 4v1a3 3 0 01-3 3h-2"
+                          d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h2m10 3v2a3 3 0 01-3 3h-2m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h2"
                         />
                       </svg>
                       <span>Sign In</span>
@@ -454,7 +471,7 @@ const Admin = () => {
                 <div className="flex items-center space-x-4">
                   <div className="text-right">
                     <p className="text-sm font-medium text-white">
-                      Welcome back!
+                      Welcome Vaibhav Patel
                     </p>
                     <p className="text-xs text-slate-400">Administrator</p>
                   </div>
@@ -486,7 +503,7 @@ const Admin = () => {
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+              {/* <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
@@ -508,14 +525,15 @@ const Admin = () => {
                   <div className="ml-4">
                     <p className="text-sm font-medium text-slate-400">
                       Total Quotes
-                    </p>                    <p className="text-2xl font-bold text-white">
+                    </p>
+                    <p className="text-2xl font-bold text-white">
                       {quotePagination.totalQuotes || quotes.length}
                     </p>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+              {/* <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
@@ -537,14 +555,15 @@ const Admin = () => {
                   <div className="ml-4">
                     <p className="text-sm font-medium text-slate-400">
                       Messages
-                    </p>                    <p className="text-2xl font-bold text-white">
+                    </p>
+                    <p className="text-2xl font-bold text-white">
                       {contactPagination.totalContacts || contacts.length}
                     </p>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+              {/* <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
@@ -581,9 +600,9 @@ const Admin = () => {
                     </p>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+              {/* <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
@@ -609,14 +628,21 @@ const Admin = () => {
                     <p className="text-2xl font-bold text-white">2.4h</p>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
+
             {/* Navigation Tabs */}
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-1 mb-8 inline-flex">
               <button
                 onClick={() => {
                   setActiveTab("quotes");
-                  setQuotePagination({ currentPage: 1, totalPages: 1, totalQuotes: 0, hasNextPage: false, hasPrevPage: false });
+                  setQuotePagination({
+                    currentPage: 1,
+                    totalPages: 1,
+                    totalQuotes: 0,
+                    hasNextPage: false,
+                    hasPrevPage: false,
+                  });
                   setQuoteFilters({ insuranceType: "", email: "", search: "" });
                 }}
                 className={`px-6 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
@@ -648,7 +674,13 @@ const Admin = () => {
               <button
                 onClick={() => {
                   setActiveTab("contacts");
-                  setContactPagination({ currentPage: 1, totalPages: 1, totalContacts: 0, hasNextPage: false, hasPrevPage: false });
+                  setContactPagination({
+                    currentPage: 1,
+                    totalPages: 1,
+                    totalContacts: 0,
+                    hasNextPage: false,
+                    hasPrevPage: false,
+                  });
                   setContactFilters({ subject: "", email: "", search: "" });
                 }}
                 className={`px-6 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
@@ -678,6 +710,7 @@ const Admin = () => {
                 </div>
               </button>
             </div>
+
             {/* Loading State */}
             {loading && (
               <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-12">
@@ -686,7 +719,9 @@ const Admin = () => {
                   <p className="text-slate-400">Loading data...</p>
                 </div>
               </div>
-            )}{" "}            {/* Quotes Tab */}
+            )}
+
+            {/* Quotes Tab */}
             {activeTab === "quotes" && !loading && (
               <>
                 {/* Filter Bar for Quotes */}
@@ -697,7 +732,7 @@ const Admin = () => {
                   onSearch={handleSearch}
                   onClear={handleClearFilters}
                 />
-                
+
                 <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
                   <div className="px-6 py-4 border-b border-white/10">
                     <h2 className="text-xl font-semibold text-white">
@@ -708,114 +743,123 @@ const Admin = () => {
                     </p>
                   </div>
 
-                {quotes.length === 0 ? (
-                  <div className="p-12 text-center">
-                    <div className="w-16 h-16 bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <svg
-                        className="w-8 h-8 text-slate-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
+                  {quotes.length === 0 ? (
+                    <div className="p-12 text-center">
+                      <div className="w-16 h-16 bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <svg
+                          className="w-8 h-8 text-slate-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-medium text-white mb-2">
+                        No quote requests
+                      </h3>
+                      <p className="text-slate-400">
+                        Quote requests will appear here when submitted
+                      </p>
                     </div>
-                    <h3 className="text-lg font-medium text-white mb-2">
-                      No quote requests
-                    </h3>
-                    <p className="text-slate-400">
-                      Quote requests will appear here when submitted
-                    </p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-slate-800/50">
-                        <tr>
-                          <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
-                            Name
-                          </th>
-                          <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
-                            Contact
-                          </th>
-                          <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
-                            Insurance Type
-                          </th>
-                          <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
-                            Details
-                          </th>
-                          <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
-                            Date
-                          </th>
-                          <th className="px-6 py-4 text-right text-xs font-medium text-slate-300 uppercase tracking-wider">
-                            Actions
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/10">
-                        {quotes.map((quote) => (
-                          <tr
-                            key={quote._id}
-                            className="hover:bg-white/5 transition-colors duration-150"
-                          >
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm font-medium text-white">
-                                {quote.fullName}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-slate-300">
-                                {quote.email}
-                              </div>
-                              <div className="text-sm text-slate-400">
-                                {quote.phoneNumber}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
-                                {quote.insuranceType}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div
-                                className="text-sm text-slate-300 max-w-xs truncate"
-                                title={quote.additionalInfo}
-                              >
-                                {quote.additionalInfo ||
-                                  "No additional information"}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
-                              {new Date(quote.createdAt).toLocaleDateString()}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <div className="flex items-center justify-end space-x-2">
-                                <button
-                                  onClick={() => handleEdit("quote", quote)}
-                                  className="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200"
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-slate-800/50">
+                          <tr>
+                            <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                              Name
+                            </th>
+                            <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                              Contact
+                            </th>
+                            <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                              Insurance Type
+                            </th>
+                            <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                              Details
+                            </th>
+                            <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                              Date & Time
+                            </th>
+                            <th className="px-6 py-4 text-right text-xs font-medium text-slate-300 uppercase tracking-wider">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/10">
+                          {quotes.map((quote) => (
+                            <tr
+                              key={quote._id}
+                              className="hover:bg-white/5 transition-colors duration-150"
+                            >
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm font-medium text-white">
+                                  {quote.fullName}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-slate-300">
+                                  {quote.email}
+                                </div>
+                                <div className="text-sm text-slate-400">
+                                  {quote.phoneNumber}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
+                                  {quote.insuranceType}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div
+                                  className="text-sm text-slate-300 max-w-xs truncate"
+                                  title={quote.additionalInfo}
                                 >
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() => handleDelete("quote", quote)}
-                                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </td>
-                          </tr>                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                                  {quote.additionalInfo ||
+                                    "No additional information"}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+                                {new Date(quote.createdAt).toLocaleDateString()}{" "}
+                                at{" "}
+                                {new Date(quote.createdAt).toLocaleTimeString(
+                                  [],
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div className="flex items-center justify-end space-x-2">
+                                  <button
+                                    onClick={() => handleEdit("quote", quote)}
+                                    className="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => handleDelete("quote", quote)}
+                                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
-                
+
                 {/* Pagination for Quotes */}
                 {quotes.length > 0 && (
                   <Pagination
@@ -828,7 +872,9 @@ const Admin = () => {
                   />
                 )}
               </>
-            )}            {/* Contacts Tab */}
+            )}
+
+            {/* Contacts Tab */}
             {activeTab === "contacts" && !loading && (
               <>
                 {/* Filter Bar for Contacts */}
@@ -839,7 +885,7 @@ const Admin = () => {
                   onSearch={handleSearch}
                   onClear={handleClearFilters}
                 />
-                
+
                 <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
                   <div className="px-6 py-4 border-b border-white/10">
                     <h2 className="text-xl font-semibold text-white">
@@ -850,125 +896,138 @@ const Admin = () => {
                     </p>
                   </div>
 
-                {contacts.length === 0 ? (
-                  <div className="p-12 text-center">
-                    <div className="w-16 h-16 bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <svg
-                        className="w-8 h-8 text-slate-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                        />
-                      </svg>
+                  {contacts.length === 0 ? (
+                    <div className="p-12 text-center">
+                      <div className="w-16 h-16 bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <svg
+                          className="w-8 h-8 text-slate-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                          />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-medium text-white mb-2">
+                        No contact messages
+                      </h3>
+                      <p className="text-slate-400">
+                        Customer messages will appear here when submitted
+                      </p>
                     </div>
-                    <h3 className="text-lg font-medium text-white mb-2">
-                      No contact messages
-                    </h3>
-                    <p className="text-slate-400">
-                      Customer messages will appear here when submitted
-                    </p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-slate-800/50">
-                        <tr>
-                          <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
-                            Name
-                          </th>
-                          <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
-                            Contact
-                          </th>
-                          <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
-                            Subject
-                          </th>
-                          <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
-                            Message
-                          </th>
-                          <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
-                            Date
-                          </th>
-                          <th className="px-6 py-4 text-right text-xs font-medium text-slate-300 uppercase tracking-wider">
-                            Actions
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/10">
-                        {contacts.map((contact) => (
-                          <tr
-                            key={contact._id}
-                            className="hover:bg-white/5 transition-colors duration-150"
-                          >
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm font-medium text-white">
-                                {contact.fullName}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-slate-300">
-                                {contact.email}
-                              </div>
-                              <div className="text-sm text-slate-400">
-                                {contact.contactNumber}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span
-                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium uppercase ${
-                                  contact.subject === "quote"
-                                    ? "bg-blue-100 text-blue-800"
-                                    : contact.subject === "claim"
-                                    ? "bg-yellow-100 text-yellow-800"
-                                    : contact.subject === "policy"
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-purple-100 text-purple-800"
-                                }`}
-                              >
-                                {contact.subject}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div
-                                className="text-sm text-slate-300 max-w-xs truncate"
-                                title={contact.message}
-                              >
-                                {contact.message}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
-                              {new Date(contact.createdAt).toLocaleDateString()}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <div className="flex items-center justify-end space-x-2">
-                                <button
-                                  onClick={() => handleEdit("contact", contact)}
-                                  className="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200"
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-slate-800/50">
+                          <tr>
+                            <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                              Name
+                            </th>
+                            <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                              Contact
+                            </th>
+                            <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                              Subject
+                            </th>
+                            <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                              Message
+                            </th>
+                            <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                              Date & Time
+                            </th>
+                            <th className="px-6 py-4 text-right text-xs font-medium text-slate-300 uppercase tracking-wider">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/10">
+                          {contacts.map((contact) => (
+                            <tr
+                              key={contact._id}
+                              className="hover:bg-white/5 transition-colors duration-150"
+                            >
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm font-medium text-white">
+                                  {contact.fullName}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-slate-300">
+                                  {contact.email}
+                                </div>
+                                <div className="text-sm text-slate-400">
+                                  {contact.contactNumber}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span
+                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium uppercase ${
+                                    contact.subject === "quote"
+                                      ? "bg-blue-100 text-blue-800"
+                                      : contact.subject === "claim"
+                                      ? "bg-yellow-100 text-yellow-800"
+                                      : contact.subject === "policy"
+                                      ? "bg-green-100 text-green-800"
+                                      : "bg-purple-100 text-purple-800"
+                                  }`}
                                 >
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    handleDelete("contact", contact)
+                                  {contact.subject}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div
+                                  className="text-sm text-slate-300 max-w-xs truncate"
+                                  title={contact.message}
+                                >
+                                  {contact.message}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+                                {new Date(
+                                  contact.createdAt
+                                ).toLocaleDateString()}{" "}
+                                at{" "}
+                                {new Date(contact.createdAt).toLocaleTimeString(
+                                  [],
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
                                   }
-                                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </td>
-                          </tr>                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                                )}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div className="flex items-center justify-end space-x-2">
+                                  <button
+                                    onClick={() =>
+                                      handleEdit("contact", contact)
+                                    }
+                                    className="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleDelete("contact", contact)
+                                    }
+                                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
-                
+
                 {/* Pagination for Contacts */}
                 {contacts.length > 0 && (
                   <Pagination
@@ -997,6 +1056,7 @@ const Admin = () => {
           </footer>
         </div>
       )}
+
       {/* Dialog Components */}
       <EditDialog
         isOpen={showEditDialog}
@@ -1012,6 +1072,7 @@ const Admin = () => {
         onClose={handleDeleteClose}
         onConfirm={confirmDelete}
       />
+
       {/* Toast Notifications */}
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
