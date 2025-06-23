@@ -9,7 +9,7 @@ export default function QuoteForm() {
     email: "",
     phoneNumber: "",
     insuranceType: "",
-    additionalInfo: ""
+    additionalInfo: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
@@ -17,9 +17,9 @@ export default function QuoteForm() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     // Clear errors when user starts typing
     if (errors.length > 0) {
@@ -35,15 +35,18 @@ export default function QuoteForm() {
     setSubmitStatus(null);
 
     try {
-      const response = await fetch("https://compass-insurance-backend.onrender.com/api/quotes", {
+      // Replace 'YOUR_FORMSPREE_ID' with your actual Formspree form ID
+      const response = await fetch("https://formspree.io/f/xyzjnwae", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          _subject: `New Insurance Quote Request from ${formData.fullName}`,
+          _replyto: formData.email,
+        }),
       });
-
-      const result = await response.json();
 
       if (response.ok) {
         setSubmitStatus("success");
@@ -52,20 +55,23 @@ export default function QuoteForm() {
           email: "",
           phoneNumber: "",
           insuranceType: "",
-          additionalInfo: ""
+          additionalInfo: "",
         });
       } else {
         setSubmitStatus("error");
-        if (result.errors) {
-          setErrors(result.errors);
+        const errorData = await response.json();
+        if (errorData.errors) {
+          setErrors(errorData.errors.map((err) => ({ message: err.message })));
         } else {
-          setErrors([{ message: result.message || "Something went wrong" }]);
+          setErrors([
+            { message: "Failed to submit form. Please try again later." },
+          ]);
         }
       }
     } catch (error) {
-      console.error("Error submitting quote:", error);
+      console.error("Error submitting form:", error);
       setSubmitStatus("error");
-      setErrors([{ message: "Network error. Please check if the server is running." }]);
+      setErrors([{ message: "Network error. Please try again later." }]);
     } finally {
       setIsSubmitting(false);
     }
@@ -88,17 +94,26 @@ export default function QuoteForm() {
 
         <section className="py-16 px-6 md:px-20 bg-white">
           <div className="max-w-4xl mx-auto">
-            <div className="bg-gray-50 rounded-xl p-8 shadow-sm">              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+            <div className="bg-gray-50 rounded-xl p-8 shadow-sm">
+              {" "}
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">
                 Quote Request Form
               </h2>
-              
               {/* Success Message */}
               {submitStatus === "success" && (
                 <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md">
                   <div className="flex">
                     <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      <svg
+                        className="h-5 w-5 text-green-400"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     </div>
                     <div className="ml-3">
@@ -106,20 +121,28 @@ export default function QuoteForm() {
                         Quote Request Submitted Successfully!
                       </h3>
                       <p className="mt-1 text-sm text-green-700">
-                        Thank you for your request. We'll get back to you within 24 hours with your personalized quote.
+                        Thank you for your request. We'll get back to you within
+                        24 hours with your personalized quote.
                       </p>
                     </div>
                   </div>
                 </div>
               )}
-
               {/* Error Messages */}
               {submitStatus === "error" && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
                   <div className="flex">
                     <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      <svg
+                        className="h-5 w-5 text-red-400"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     </div>
                     <div className="ml-3">
@@ -137,7 +160,6 @@ export default function QuoteForm() {
                   </div>
                 </div>
               )}
-
               <form className="space-y-6" onSubmit={handleSubmit}>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
@@ -177,7 +199,6 @@ export default function QuoteForm() {
                     />
                   </div>
                 </div>
-
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <label
@@ -244,7 +265,8 @@ export default function QuoteForm() {
                       <option value="other">Other</option>
                     </select>
                   </div>
-                </div>                <div>
+                </div>{" "}
+                <div>
                   <label
                     htmlFor="additionalInfo"
                     className="block text-sm font-medium text-gray-700 mb-1"
@@ -261,7 +283,6 @@ export default function QuoteForm() {
                     placeholder="Any specific requirements or details..."
                   ></textarea>
                 </div>
-
                 <button
                   type="submit"
                   disabled={isSubmitting}

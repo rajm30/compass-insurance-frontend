@@ -37,18 +37,18 @@ export default function Contact() {
     setSubmitStatus(null);
 
     try {
-      const response = await fetch(
-        "https://compass-insurance-backend.onrender.com/api/contact",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
-
-      const result = await response.json();
+      // Replace 'YOUR_FORMSPREE_ID' with your actual Formspree form ID
+      const response = await fetch("https://formspree.io/f/YOUR_FORMSPREE_ID", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          _subject: `New Contact Submission: ${formData.subject}`,
+          _replyto: formData.email,
+        }),
+      });
 
       if (response.ok) {
         setSubmitStatus("success");
@@ -61,18 +61,14 @@ export default function Contact() {
         });
       } else {
         setSubmitStatus("error");
-        if (result.errors) {
-          setErrors(result.errors);
-        } else {
-          setErrors([{ message: result.message || "Something went wrong" }]);
-        }
+        setErrors([
+          { message: "Failed to send message. Please try again later." },
+        ]);
       }
     } catch (error) {
-      console.error("Error submitting contact:", error);
+      console.error("Error submitting form:", error);
       setSubmitStatus("error");
-      setErrors([
-        { message: "Network error. Please check if the server is running." },
-      ]);
+      setErrors([{ message: "Network error. Please try again later." }]);
     } finally {
       setIsSubmitting(false);
     }
@@ -108,7 +104,6 @@ export default function Contact() {
 
         <section className="py-16 px-6 md:px-20 bg-white">
           <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-12">
-            {" "}
             <div className="bg-gray-50 rounded-xl p-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
                 Send Us a Message
@@ -136,8 +131,8 @@ export default function Contact() {
                         Message Sent Successfully!
                       </h3>
                       <p className="mt-1 text-sm text-green-700">
-                        Thank you for contacting us. We'll get back to you as
-                        soon as possible.
+                        Thank you for contacting us. We'll get back to you
+                        within 24 hours.
                       </p>
                     </div>
                   </div>
@@ -178,6 +173,9 @@ export default function Contact() {
               )}
 
               <form className="space-y-4" onSubmit={handleSubmit}>
+                {/* Honeypot spam protection */}
+                <input type="text" name="_gotcha" className="hidden" />
+
                 <div>
                   <label
                     htmlFor="fullName"
@@ -268,8 +266,9 @@ export default function Contact() {
                     onChange={handleInputChange}
                     rows="4"
                     className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Your message here... (minimum 10 characters)"
+                    placeholder="Your message here..."
                     required
+                    minLength="10"
                   ></textarea>
                 </div>
                 <button
@@ -285,6 +284,8 @@ export default function Contact() {
                 </button>
               </form>
             </div>
+
+            {/* Contact Information Section (Remains Unchanged) */}
             <div>
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
                 Contact Information
@@ -475,6 +476,7 @@ export default function Contact() {
           </div>
         </section>
 
+        {/* FAQ Section (Remains Unchanged) */}
         <section className="bg-blue-50 py-16 px-6 md:px-20">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
