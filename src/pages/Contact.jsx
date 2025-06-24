@@ -223,6 +223,7 @@ export default function Contact() {
                     type="tel"
                     id="contactNumber"
                     name="contactNumber"
+                    maxLength={10}
                     value={formData.contactNumber}
                     onChange={handleInputChange}
                     className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
