@@ -155,7 +155,7 @@ const Footer = () => {
         <a
           target="_blank"
           rel="noopener noreferrer"
-          href="https://www.linkedin.com/authwall?trk=gf&trkInfo=AQH6thaxL8PY3gAAAZeINfUYAVCf7Q-nJDqlJd5tYWlDWGPGGdFRKTdnThtGw6poBunvHjHxoF4MLqtPdSNYvd6qTm0KQIWUyXgIqB4rXntGVj2WNNDn-3DaUWaEDT197qcV_Hw=&original_referer=https://www.google.com/&sessionRedirect=https%3A%2F%2Fwww.linkedin.com%2Fin%2Fraj-mistry-b129751b1%2F"
+          href="https://www.linkedin.com/in/raj-mistry-b129751b1/"
           className="mt-2 md:mt-0 flex items-center hover:text-gray-700 transition-colors"
         >
           <span className="mr-1">Made By Raj Mistry</span>
